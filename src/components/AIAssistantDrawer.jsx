@@ -3,6 +3,12 @@ import {
   Drawer, Box, Avatar, Typography, Divider, TextField, Button, Stack
 } from "@mui/material";
 import AutoAwesomeIcon from "@mui/icons-material/AutoAwesome";
+import {ChatAgent} from "../Controller/Assistant"
+
+let instructions="you are an AI assistant on the analytics dashboard, here to help with questions about IBM Quantum jobs, sessions, and backends using available knowledge. Before you begin, would you like to continue in Demo Mode or use your actual IBM Quantum credentials? Currently, only Demo Mode is available, so you will provide responses based on sample data from the knowledge  base.";
+  
+const chat = new ChatAgent(); // keep this outside component so thread stays alive
+
 
 export default function AIAssistantDrawer({ open, onClose, data }) {
   const [messages, setMessages] = useState([
@@ -11,30 +17,35 @@ export default function AIAssistantDrawer({ open, onClose, data }) {
   const [input, setInput] = useState("");
 
   const pushMessage = (role, text) => setMessages((m) => [...m, { role, text }]);
+  
+  
 
-  const handleSend = () => {
+  async function handleSend(){
     if (!input.trim()) return;
     const userMsg = input.trim();
     pushMessage("user", userMsg);
+     
+    // const lower = userMsg.toLowerCase();
+    
+    
 
-    const lower = userMsg.toLowerCase();
-    let reply =
-      "I can summarize backends, jobs, and sessions. Try: “summarize backends”, “show running jobs”, or “active sessions”.";
-    if (lower.includes("backend")) {
-      const available = data.backends.filter((b) => b.status === "Available").map((b) => b.name).join(", ");
-      const reply = `Currently available backends: ${available || "none"}. Total: ${data.backends.length}.`;
+    let reply =await chat.sendMessage(userMsg);
+      // "I can summarize backends, jobs, and sessions. Try: “summarize backends”, “show running jobs”, or “active sessions”.";
+  //   if (lower.includes("backend")) {
+  //     const available = data.backends.filter((b) => b.status === "Available").map((b) => b.name).join(", ");
+  //     const reply = Currently available backends: ${available || "none"}. Total: ${data.backends.length}.;
 
-    } else if (lower.includes("job")) {
-      const running = data.jobs.filter((j) => j.status === "Running").map((j) => j.id).join(", ");
-     const reply = running 
-  ? `Running jobs: ${running}.` 
-  : "No jobs are running right now.";
+  //   } else if (lower.includes("job")) {
+  //     const running = data.jobs.filter((j) => j.status === "Running").map((j) => j.id).join(", ");
+  //    const reply = running 
+  // ? Running jobs: ${running}. 
+  // : "No jobs are running right now.";
 
-    } else if (lower.includes("session")) {
-      const active = data.sessions.filter((s) => s.status === "Active").length;
-     const reply = `You have ${active} active session${active === 1 ? "" : "s"}.`;
+  //   } else if (lower.includes("session")) {
+  //     const active = data.sessions.filter((s) => s.status === "Active").length;
+  //    const reply = You have ${active} active session${active === 1 ? "" : "s"}.;
 
-    }
+  //   }
     setTimeout(() => pushMessage("assistant", reply), 400);
     setInput("");
   };
